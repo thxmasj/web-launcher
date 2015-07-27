@@ -1,7 +1,5 @@
 package it.thomasjohansen.launcher.web;
 
-import java.lang.String;import java.nio.file.Path;
-
 /**
  * Describe a web application connector by its TCP port. If the connector is using TLS a key
  * store path and a password for the key store can be specified.
@@ -10,14 +8,14 @@ import java.lang.String;import java.nio.file.Path;
 public class ConnectorDescriptor {
 
     private int port;
-    private Path keyStorePath;
+    private String keyStorePath;
     private String keyStorePassword;
 
     public ConnectorDescriptor(int port) {
         this.port = port;
     }
 
-    public ConnectorDescriptor(int port, Path keyStorePath, String keyStorePassword) {
+    public ConnectorDescriptor(int port, String keyStorePath, String keyStorePassword) {
         this.port = port;
         this.keyStorePath = keyStorePath;
         this.keyStorePassword = keyStorePassword;
@@ -27,7 +25,7 @@ public class ConnectorDescriptor {
         return port;
     }
 
-    public Path getKeyStorePath() {
+    public String getKeyStorePath() {
         return keyStorePath;
     }
 

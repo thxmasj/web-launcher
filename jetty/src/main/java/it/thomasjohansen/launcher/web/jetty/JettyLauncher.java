@@ -49,7 +49,8 @@ public class JettyLauncher implements Launcher {
         this.configuration = configuration;
     }
 
-    public void launch() throws Exception {
+    @Override
+    public Launcher launch() throws Exception {
         //server.setBaseDir(baseDir.toAbsolutePath().toString());
         for (ConnectorDescriptor connectorDescriptor : configuration.getConnectorDescriptors()) {
             if (connectorDescriptor.getKeyStorePath() != null)
@@ -85,14 +86,25 @@ public class JettyLauncher implements Launcher {
 
         //Runtime.getRuntime().addShutdownHook(new WorkFileRemover(baseDir));
         server.start();
+        return this;
     }
 
     @Override
-    public void awaitTermination() {
+    public Launcher awaitTermination() {
         try {
             server.getServer().join();
         } catch (InterruptedException e) {
             throw new RuntimeException("Failed to await termination");
+        }
+        return this;
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            server.getServer().stop();
+        } catch (Exception e) {
+            throw new IOException("Failed to stop Jetty", e);
         }
     }
 
@@ -136,7 +148,7 @@ public class JettyLauncher implements Launcher {
     private void addSecureConnector(
             Server server,
             int port,
-            Path keyStorePath
+            String keyStorePath
     ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         throw new UnsupportedOperationException();
     }

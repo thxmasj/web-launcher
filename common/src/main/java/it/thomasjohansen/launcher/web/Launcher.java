@@ -1,13 +1,14 @@
 package it.thomasjohansen.launcher.web;
 
+import java.io.Closeable;
 import java.lang.Exception; /**
  * Launch web applications.
  * @author thomas@thomasjohansen.it
  */
-public interface Launcher {
+public interface Launcher extends Closeable {
 
-    void launch() throws Exception;
+    Launcher launch() throws Exception;
 
-    void awaitTermination();
+    Launcher awaitTermination();
 
 }

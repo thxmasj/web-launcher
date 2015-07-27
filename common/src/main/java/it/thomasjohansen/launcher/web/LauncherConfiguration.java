@@ -1,11 +1,8 @@
 package it.thomasjohansen.launcher.web;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.Integer;import java.lang.String;import java.lang.System;import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -26,6 +23,7 @@ public class LauncherConfiguration {
     private List<ApplicationDescriptor> applicationDescriptors = new ArrayList<>();
     private boolean enableManager;
     private String managerContextPath = "/manager";
+    private ClassLoader classLoader;
 
     private LauncherConfiguration() {
         // Only builder should use constructor.
@@ -47,22 +45,12 @@ public class LauncherConfiguration {
         return enableManager;
     }
 
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
     public String getManagerContextPath() {
         return managerContextPath;
-    }
-
-    private static Path createPrivateKeyStore(Path directory, String password, String resource) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        return createKeyStore(directory, "privateKeyStore", resource, password);
-    }
-
-    private static Path createKeyStore(Path directory, String fileName, String resourceName, String password) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        InputStream in = LauncherConfiguration.class.getResourceAsStream(resourceName);
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keyStore.load(in, password.toCharArray());
-        Path file = directory.resolve(fileName);
-        FileOutputStream out = new FileOutputStream(file.toFile());
-        keyStore.store(out, password.toCharArray());
-        return file.toAbsolutePath();
     }
 
     private static String getPrivateKeyPassword() {
@@ -88,7 +76,7 @@ public class LauncherConfiguration {
             return this;
         }
 
-        public Builder addSecureConnector(int port, Path keyStorePath, String password) {
+        public Builder addSecureConnector(int port, String keyStorePath, String password) {
             instance.connectorDescriptors.add(new ConnectorDescriptor(port, keyStorePath, password));
             return this;
         }
@@ -107,6 +95,7 @@ public class LauncherConfiguration {
             return this;
         }
 
+        @SuppressWarnings("unused")
         public Builder enableManager(String contextPath) {
             instance.enableManager = true;
             instance.managerContextPath = contextPath;
@@ -115,6 +104,12 @@ public class LauncherConfiguration {
 
         public Builder baseDir(Path baseDir) {
             instance.baseDir = baseDir;
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        public Builder classLoader(ClassLoader classLoader) {
+            instance.classLoader = classLoader;
             return this;
         }
 
@@ -138,11 +133,7 @@ public class LauncherConfiguration {
                         String keyStorePassword = getPrivateKeyPassword();
                         addSecureConnector(
                                 Integer.parseInt(argument),
-                                createPrivateKeyStore(
-                                        baseDir,
-                                        keyStorePassword,
-                                        "/tls.jks"
-                                ),
+                                "/tls.jks",
                                 keyStorePassword
                         );
                     } else
@@ -159,9 +150,14 @@ public class LauncherConfiguration {
             return this;
         }
 
-        public LauncherConfiguration build() throws IOException {
-            if (instance.baseDir == null)
-                instance.baseDir = Files.createTempDirectory("Launcher");
+        public LauncherConfiguration build() {
+            if (instance.baseDir == null) {
+                try {
+                    instance.baseDir = Files.createTempDirectory("Launcher");
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to create base directory", e);
+                }
+            }
             return instance;
         }
 

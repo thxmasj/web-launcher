@@ -18,21 +18,29 @@ import org.apache.catalina.webresources.StandardRoot;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+
+import static java.lang.System.console;
 
 /**
  * Launch web applications (WAR files) with Tomcat.
  */
 public class TomcatLauncher implements Launcher {
 
-    private final LauncherConfiguration configuration;
     private final Tomcat tomcat = new Tomcat();
 
     public static LauncherConfiguration.Builder configuration() {
@@ -43,32 +51,60 @@ public class TomcatLauncher implements Launcher {
         LauncherConfiguration configuration;
         if (args.length > 0)
             configuration = configuration().cliArguments(args).build();
-        else
+        else if (hasManifestEntry()) {
+            URL location = TomcatLauncher.class.getProtectionDomain().getCodeSource().getLocation();
+            JarFile jarFile = new JarFile(location.getFile());
+            Manifest manifest = jarFile.getManifest();
+            Attributes attributes = manifest.getMainAttributes();
+            String port = attributes.getValue("WebLauncher-Port");
+            String keyStorePath = attributes.getValue("WebLauncher-KeyStorePath");
+            String contextPath = attributes.getValue("WebLauncher-ContextPath");
+            LauncherConfiguration.Builder configBuilder = configuration();
+            if (port != null) {
+                if (keyStorePath != null) {
+                    configBuilder.addSecureConnector(
+                            Integer.parseInt(port),
+                            keyStorePath,
+                            // TODO: Could be read when Tomcat is actually configured - or started - to minimize memory footprint
+                            getPrivateKeyPassword()
+                    );
+                } else {
+                    configBuilder.addConnector(Integer.parseInt(port));
+                }
+            }
+            if (contextPath != null) {
+                configBuilder.addApplication(contextPath, location.getFile());
+            }
+            configuration = configBuilder.build();
+        } else {
             configuration = configuration().defaults().build();
+        }
         new TomcatLauncher(configuration).launch();
     }
 
-    public TomcatLauncher(LauncherConfiguration configuration) {
-        this.configuration = configuration;
+    private static boolean hasManifestEntry() throws IOException {
+        URL location = TomcatLauncher.class.getProtectionDomain().getCodeSource().getLocation();
+        JarFile jarFile = new JarFile(location.getFile());
+        Manifest manifest = jarFile.getManifest();
+        return manifest != null && manifest.getMainAttributes().getValue("WebLauncher-Port") != null;
     }
 
-    @Override
-    public void launch() throws
-            CertificateException,
-            NoSuchAlgorithmException,
-            KeyStoreException,
-            IOException,
-            ServletException,
-            URISyntaxException,
-            LifecycleException
-    {
+    public TomcatLauncher(LauncherConfiguration configuration) throws CertificateException, ServletException, NoSuchAlgorithmException, KeyStoreException, URISyntaxException, IOException {
+        configure(configuration);
+    }
+
+    private void configure(LauncherConfiguration configuration) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, ServletException, URISyntaxException {
         tomcat.setBaseDir(configuration.getBaseDir().toAbsolutePath().toString());
         for (ConnectorDescriptor connectorDescriptor : configuration.getConnectorDescriptors()) {
             if (connectorDescriptor.getKeyStorePath() != null)
                 addSecureConnector(
                         tomcat,
                         connectorDescriptor.getPort(),
-                        connectorDescriptor.getKeyStorePath(),
+                        createPrivateKeyStore(
+                                configuration.getBaseDir(),
+                                connectorDescriptor.getKeyStorePassword(),
+                                connectorDescriptor.getKeyStorePath()
+                        ),
                         connectorDescriptor.getKeyStorePassword()
                 );
             else
@@ -88,12 +124,29 @@ public class TomcatLauncher implements Launcher {
             addManagerServlet(tomcat, configuration.getManagerContextPath());
         }
         Runtime.getRuntime().addShutdownHook(new WorkFileRemover(configuration.getBaseDir()));
-        tomcat.start();
+        if (configuration.getClassLoader() != null)
+            tomcat.getEngine().setParentClassLoader(configuration.getClassLoader());
     }
 
     @Override
-    public void awaitTermination() {
+    public Launcher launch() throws LifecycleException {
+        tomcat.start();
+        return this;
+    }
+
+    @Override
+    public Launcher awaitTermination() {
         tomcat.getServer().await();
+        return this;
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            tomcat.getServer().stop();
+        } catch (LifecycleException e) {
+            throw new IOException("Failed to stop Tomcat", e);
+        }
     }
 
     private Context addWebApplication(
@@ -165,14 +218,10 @@ public class TomcatLauncher implements Launcher {
         connector.setPort(port);
         connector.setSecure(true);
         connector.setScheme("https");
-//        connector.setAttribute("ciphers", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_RC4_128_SHA,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA,SSL_RSA_WITH_RC4_128_SHA");
         connector.setAttribute("keystoreFile", keyStorePath.toString());
         connector.setAttribute("keystorePass", password);
         if (keyStorePath.toString().endsWith(".p12"))
             connector.setAttribute("keystoreType", "PKCS12");
-//        connector.setAttribute("truststoreFile", trustStorePath.toAbsolutePath().toString());
-//        connector.setAttribute("truststorePass", "changeit");
-//        connector.setAttribute("clientAuth", true);
         connector.setAttribute("SSLEnabled", "true");
         connector.setAttribute("sslEnabledProtocols", "TLSv1.2");
         connector.setAttribute("sslProtocol", "TLSv1.2");
@@ -185,6 +234,29 @@ public class TomcatLauncher implements Launcher {
         connector.setPort(port);
         tomcat.getService().addConnector(connector);
         tomcat.setConnector(connector);
+    }
+
+    private static Path createPrivateKeyStore(Path directory, String password, String resource) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        return createKeyStore(directory, "privateKeyStore", resource, password);
+    }
+
+    private static Path createKeyStore(Path directory, String fileName, String resourceName, String password) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        if (TomcatLauncher.class.getResourceAsStream(resourceName) == null)
+            throw new IllegalArgumentException("Resource «" + resourceName + "» does not exist");
+        InputStream in = TomcatLauncher.class.getResourceAsStream(resourceName);
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keyStore.load(in, password.toCharArray());
+        Path file = directory.resolve(fileName);
+        FileOutputStream out = new FileOutputStream(file.toFile());
+        keyStore.store(out, password.toCharArray());
+        return file.toAbsolutePath();
+    }
+
+    private static String getPrivateKeyPassword() {
+        return System.getProperty("javax.net.ssl.keyStorePassword",
+                console() != null
+                        ? String.valueOf(console().readPassword("Private key password> "))
+                        : "changeit");
     }
 
     static class WorkFileRemover extends Thread {
