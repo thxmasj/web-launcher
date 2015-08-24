@@ -111,12 +111,14 @@ public class TomcatLauncher implements Launcher {
                 addConnector(tomcat, connectorDescriptor.getPort());
         }
         for (ApplicationDescriptor applicationDescriptor : configuration.getApplicationDescriptors()) {
-            addWebApplication(
+            Context context = addWebApplication(
                     tomcat,
                     configuration.getBaseDir(),
                     applicationDescriptor.getContextPath(),
                     applicationDescriptor.getLocation()
             );
+            if (configuration.getClassLoader() != null)
+                context.setParentClassLoader(configuration.getClassLoader());
         }
         // Start all applications in parallel
         tomcat.getHost().setStartStopThreads(configuration.getApplicationDescriptors().size());
@@ -124,8 +126,6 @@ public class TomcatLauncher implements Launcher {
             addManagerServlet(tomcat, configuration.getManagerContextPath());
         }
         Runtime.getRuntime().addShutdownHook(new WorkFileRemover(configuration.getBaseDir()));
-        if (configuration.getClassLoader() != null)
-            tomcat.getEngine().setParentClassLoader(configuration.getClassLoader());
     }
 
     @Override
