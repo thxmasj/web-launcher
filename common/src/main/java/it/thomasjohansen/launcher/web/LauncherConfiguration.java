@@ -23,37 +23,42 @@ public class LauncherConfiguration {
     private List<ApplicationDescriptor> applicationDescriptors = new ArrayList<>();
     private boolean enableManager;
     private String managerContextPath = "/manager";
+    private boolean enableCluster;
     private ClassLoader classLoader;
 
     private LauncherConfiguration() {
         // Only builder should use constructor.
     }
 
-    public Path getBaseDir() {
+    public Path baseDir() {
         return baseDir;
     }
 
-    public List<ConnectorDescriptor> getConnectorDescriptors() {
+    public List<ConnectorDescriptor> connectorDescriptors() {
         return connectorDescriptors;
     }
 
-    public List<ApplicationDescriptor> getApplicationDescriptors() {
+    public List<ApplicationDescriptor> applicationDescriptors() {
         return applicationDescriptors;
     }
 
-    public boolean isEnableManager() {
+    public boolean enableManager() {
         return enableManager;
     }
 
-    public ClassLoader getClassLoader() {
+    public boolean enableCluster() {
+        return enableCluster;
+    }
+
+    public ClassLoader classLoader() {
         return classLoader;
     }
 
-    public String getManagerContextPath() {
+    public String managerContextPath() {
         return managerContextPath;
     }
 
-    private static String getPrivateKeyPassword() {
+    private static String privateKeyPassword() {
         return System.getProperty("javax.net.ssl.keyStorePassword",
                 console() != null
                         ? String.valueOf(console().readPassword("Private key password> "))
@@ -71,17 +76,17 @@ public class LauncherConfiguration {
             this.instance = instance;
         }
 
-        public Builder addConnector(int port) {
+        public Builder connector(int port) {
             instance.connectorDescriptors.add(new ConnectorDescriptor(port));
             return this;
         }
 
-        public Builder addSecureConnector(int port, String keyStorePath, String password) {
+        public Builder secureConnector(int port, String keyStorePath, String password) {
             instance.connectorDescriptors.add(new ConnectorDescriptor(port, keyStorePath, password));
             return this;
         }
 
-        public Builder addApplication(String contextPath, String location) {
+        public Builder application(String contextPath, String location) {
             instance.applicationDescriptors.add(new ApplicationDescriptor(
                     contextPath,
                     location
@@ -102,6 +107,11 @@ public class LauncherConfiguration {
             return this;
         }
 
+        public Builder enableCluster() {
+            instance.enableCluster = true;
+            return this;
+        }
+
         public Builder baseDir(Path baseDir) {
             instance.baseDir = baseDir;
             return this;
@@ -114,8 +124,8 @@ public class LauncherConfiguration {
         }
 
         public Builder defaults() {
-            addConnector(8080)
-                    .addApplication(
+            connector(8080)
+                    .application(
                             "",
                             LauncherConfiguration.class.getProtectionDomain().getCodeSource().getLocation().getFile()
                     )
@@ -130,18 +140,18 @@ public class LauncherConfiguration {
             for (String argument : arguments) {
                 if (argument.matches("\\d+")) {
                     if (LauncherConfiguration.class.getResourceAsStream("/tls.jks") != null) {
-                        String keyStorePassword = getPrivateKeyPassword();
-                        addSecureConnector(
+                        String keyStorePassword = privateKeyPassword();
+                        secureConnector(
                                 Integer.parseInt(argument),
                                 "/tls.jks",
                                 keyStorePassword
                         );
                     } else
-                        addConnector(Integer.parseInt(argument));
+                        connector(Integer.parseInt(argument));
                 } else if (argument.matches("/.*=.*\\.war")) {
-                    addApplication(argument.split("=")[0], argument.split("=")[1]);
+                    application(argument.split("=")[0], argument.split("=")[1]);
                 } else {
-                    addApplication(
+                    application(
                             argument,
                             LauncherConfiguration.class.getProtectionDomain().getCodeSource().getLocation().getFile()
                     );

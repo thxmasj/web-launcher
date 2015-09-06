@@ -26,7 +26,7 @@ public class TomcatLauncherTest {
     @Test
     public void whenConnectorPortIsConfiguredThenAListeningSocketOnThatPortIsCreatedOnLaunch() throws Exception {
         int port = findAvailablePort();
-        LauncherConfiguration config = TomcatLauncher.configuration().addConnector(port).build();
+        LauncherConfiguration config = TomcatLauncher.configuration().connector(port).build();
         try (@SuppressWarnings("unused")
              Launcher launcher = new TomcatLauncher(config).launch();
              Socket socket = new Socket("localhost", port)) {
@@ -38,7 +38,7 @@ public class TomcatLauncherTest {
     public void whenAddingSecureConnectorTlsIsWorking() throws Exception {
         int port = findAvailablePort();
         trustAllCertificates();
-        LauncherConfiguration config = TomcatLauncher.configuration().addSecureConnector(port, "/tls.jks", "changeit").enableManager().build();
+        LauncherConfiguration config = TomcatLauncher.configuration().secureConnector(port, "/tls.jks", "changeit").enableManager().build();
         HttpsURLConnection connection = null;
         try (@SuppressWarnings("unused")
              Launcher launcher = new TomcatLauncher(config).launch()) {

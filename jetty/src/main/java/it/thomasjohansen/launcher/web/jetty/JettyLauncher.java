@@ -52,23 +52,23 @@ public class JettyLauncher implements Launcher {
     @Override
     public Launcher launch() throws Exception {
         //server.setBaseDir(baseDir.toAbsolutePath().toString());
-        for (ConnectorDescriptor connectorDescriptor : configuration.getConnectorDescriptors()) {
+        for (ConnectorDescriptor connectorDescriptor : configuration.connectorDescriptors()) {
             if (connectorDescriptor.getKeyStorePath() != null)
                 addSecureConnector(server, connectorDescriptor.getPort(), connectorDescriptor.getKeyStorePath());
             else
                 addConnector(server, connectorDescriptor.getPort());
         }
-        for (ApplicationDescriptor applicationDescriptor : configuration.getApplicationDescriptors()) {
+        for (ApplicationDescriptor applicationDescriptor : configuration.applicationDescriptors()) {
             addWebApplication(
                     server,
-                    configuration.getBaseDir(),
+                    configuration.baseDir(),
                     applicationDescriptor.getContextPath(),
                     applicationDescriptor.getLocation()
             );
         }
         // Start all webapps in parallell
         //server.getHost().setStartStopThreads(applicationDescriptors.size());
-        if (configuration.isEnableManager()) {
+        if (configuration.enableManager()) {
             //addManagerServlet(server, managerContextPath);
         }
         // Enable servlet specification annotations
