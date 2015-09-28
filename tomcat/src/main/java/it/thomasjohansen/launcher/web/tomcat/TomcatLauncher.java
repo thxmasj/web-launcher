@@ -107,7 +107,6 @@ public class TomcatLauncher implements Launcher {
         for (ApplicationDescriptor applicationDescriptor : configuration.applicationDescriptors()) {
             Context context = addWebApplication(
                     tomcat,
-                    configuration.baseDir(),
                     applicationDescriptor.getContextPath(),
                     applicationDescriptor.getLocation()
             );
@@ -123,6 +122,18 @@ public class TomcatLauncher implements Launcher {
             addManagerServlet(tomcat, configuration.managerContextPath());
         }
         Runtime.getRuntime().addShutdownHook(new WorkFileRemover(configuration.baseDir()));
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }));
+        if (!Files.exists(configuration.baseDir().resolve("webapps")))
+            Files.createDirectories(configuration.baseDir().resolve("webapps/tmp"));
     }
 
     @Override
@@ -148,7 +159,6 @@ public class TomcatLauncher implements Launcher {
 
     private Context addWebApplication(
             Tomcat tomcat,
-            Path baseDir,
             String contextPath,
             String location
     ) throws ServletException, IOException, URISyntaxException {
@@ -156,9 +166,6 @@ public class TomcatLauncher implements Launcher {
         // Note that class loading is extremely slow with unpackWAR=false, so start-up and first request(s) might take
         // long time (up to minutes).
         context.setUnpackWAR(true);
-        // Directory "webapps" is not used when unpackWAR is false
-        if (context.getUnpackWAR() && !Files.exists(baseDir.resolve("webapps")))
-            Files.createDirectory(baseDir.resolve("webapps"));
         return context;
     }
 
