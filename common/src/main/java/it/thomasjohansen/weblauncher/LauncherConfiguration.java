@@ -1,4 +1,4 @@
-package it.thomasjohansen.launcher.web;
+package it.thomasjohansen.weblauncher;
 
 import java.io.IOException;
 import java.lang.Integer;import java.lang.String;import java.lang.System;import java.nio.file.Files;

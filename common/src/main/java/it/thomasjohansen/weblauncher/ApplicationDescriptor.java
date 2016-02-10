@@ -1,4 +1,4 @@
-package it.thomasjohansen.launcher.web;
+package it.thomasjohansen.weblauncher;
 
 import java.lang.String; /**
  * Describe a web application by its context path and location.

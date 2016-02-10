@@ -1,9 +1,9 @@
-package it.thomasjohansen.launcher.web.tomcat;
+package it.thomasjohansen.weblauncher.tomcat;
 
-import it.thomasjohansen.launcher.web.ApplicationDescriptor;
-import it.thomasjohansen.launcher.web.ConnectorDescriptor;
-import it.thomasjohansen.launcher.web.Launcher;
-import it.thomasjohansen.launcher.web.LauncherConfiguration;
+import it.thomasjohansen.weblauncher.ApplicationDescriptor;
+import it.thomasjohansen.weblauncher.ConnectorDescriptor;
+import it.thomasjohansen.weblauncher.Launcher;
+import it.thomasjohansen.weblauncher.LauncherConfiguration;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;

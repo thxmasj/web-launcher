@@ -1,4 +1,4 @@
-package it.thomasjohansen.launcher.web;
+package it.thomasjohansen.weblauncher;
 
 import java.io.Closeable;
 import java.lang.Exception; /**

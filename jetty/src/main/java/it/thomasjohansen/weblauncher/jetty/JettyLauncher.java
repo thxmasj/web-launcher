@@ -1,9 +1,9 @@
-package it.thomasjohansen.launcher.web.jetty;
+package it.thomasjohansen.weblauncher.jetty;
 
-import it.thomasjohansen.launcher.web.ApplicationDescriptor;
-import it.thomasjohansen.launcher.web.ConnectorDescriptor;
-import it.thomasjohansen.launcher.web.Launcher;
-import it.thomasjohansen.launcher.web.LauncherConfiguration;
+import it.thomasjohansen.weblauncher.ApplicationDescriptor;
+import it.thomasjohansen.weblauncher.ConnectorDescriptor;
+import it.thomasjohansen.weblauncher.Launcher;
+import it.thomasjohansen.weblauncher.LauncherConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.Configuration;

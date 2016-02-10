@@ -1,7 +1,7 @@
-package it.thomasjohansen.launcher.web.tomcat;
+package it.thomasjohansen.weblauncher.tomcat;
 
-import it.thomasjohansen.launcher.web.Launcher;
-import it.thomasjohansen.launcher.web.LauncherConfiguration;
+import it.thomasjohansen.weblauncher.Launcher;
+import it.thomasjohansen.weblauncher.LauncherConfiguration;
 import org.junit.Test;
 
 import javax.net.ssl.HttpsURLConnection;

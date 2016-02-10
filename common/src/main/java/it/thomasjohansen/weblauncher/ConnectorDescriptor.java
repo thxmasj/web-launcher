@@ -1,4 +1,4 @@
-package it.thomasjohansen.launcher.web;
+package it.thomasjohansen.weblauncher;
 
 /**
  * Describe a web application connector by its TCP port. If the connector is using TLS a key

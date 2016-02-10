@@ -10,7 +10,7 @@
     </description>
 
     <parent>
-        <groupId>it.thomasjohansen.launcher</groupId>
+        <groupId>it.thomasjohansen.weblauncher</groupId>
         <artifactId>web-launcher</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -21,7 +21,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>it.thomasjohansen.launcher</groupId>
+            <groupId>it.thomasjohansen.weblauncher</groupId>
             <artifactId>web-launcher-common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
