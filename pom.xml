@@ -15,7 +15,7 @@
     <parent>
         <groupId>it.thomasjohansen</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
     </parent>
 
     <modules>
@@ -23,13 +23,5 @@
         <module>tomcat</module>
         <module>jetty</module>
     </modules>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-gpg-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
