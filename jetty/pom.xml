@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <jetty.version>9.2.10.v20150310</jetty.version>
+        <jetty.version>9.3.7.v20160115</jetty.version>
     </properties>
 
     <dependencies>
@@ -43,11 +43,6 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jsp</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <dependency>
