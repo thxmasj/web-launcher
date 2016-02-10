@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jetty-launcher</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <name>Jetty Launcher</name>
     <description>
         Deploy web applications with embedded Jetty
@@ -12,7 +12,7 @@
     <parent>
         <groupId>it.thomasjohansen.launcher</groupId>
         <artifactId>web-launcher</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>it.thomasjohansen.launcher</groupId>
             <artifactId>web-launcher-common</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
