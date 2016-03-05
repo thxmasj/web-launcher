@@ -45,7 +45,7 @@ public class TomcatLauncherTest {
             URL url = new URL("https://localhost:" + port + "/manager");
             connection = (HttpsURLConnection) url.openConnection();
             assertEquals(200, connection.getResponseCode());
-            assertEquals("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", connection.getCipherSuite());
+            assertEquals("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", connection.getCipherSuite());
         } finally {
             if (connection != null)
                 connection.disconnect();
