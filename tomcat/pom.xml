@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>tomcat-launcher</artifactId>
-    <version>1.0-RC1</version>
+    <version>1.0-SNAPSHOT</version>
     <name>Tomcat Launcher</name>
     <description>
         Deploy web applications with embedded Tomcat
@@ -12,18 +12,18 @@
     <parent>
         <groupId>it.thomasjohansen.weblauncher</groupId>
         <artifactId>web-launcher</artifactId>
-        <version>1.0-RC1</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <tomcat.version>8.0.30</tomcat.version>
+        <tomcat.version>8.0.32</tomcat.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>it.thomasjohansen.weblauncher</groupId>
             <artifactId>web-launcher-common</artifactId>
-            <version>1.0-RC1</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
@@ -34,6 +34,16 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jasper</artifactId>
             <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jasper-el</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <artifactId>ecj</artifactId>
+            <version>4.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
@@ -48,6 +58,11 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-logging-juli</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-el-api</artifactId>
             <version>${tomcat.version}</version>
         </dependency>
         <dependency>
