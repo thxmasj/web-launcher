@@ -4,6 +4,7 @@ import it.thomasjohansen.weblauncher.Launcher;
 import it.thomasjohansen.weblauncher.LauncherConfiguration;
 import org.junit.Test;
 
+import javax.crypto.Cipher;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -45,7 +46,12 @@ public class TomcatLauncherTest {
             URL url = new URL("https://localhost:" + port + "/manager");
             connection = (HttpsURLConnection) url.openConnection();
             assertEquals(200, connection.getResponseCode());
-            assertEquals("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", connection.getCipherSuite());
+            if (Cipher.getMaxAllowedKeyLength("AES") == 128) {
+                assertEquals("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", connection.getCipherSuite());
+            } else {
+                // We've got unlimited strength
+                assertEquals("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", connection.getCipherSuite());
+            }
         } finally {
             if (connection != null)
                 connection.disconnect();
